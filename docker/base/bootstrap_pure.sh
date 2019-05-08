@@ -30,36 +30,73 @@ export GOROOT_BOOTSTRAP=$GOROOT
 echo "Bootstrapping linux/386..."
 GOOS=linux GOARCH=386 CGO_ENABLED=1 go install std
 
-echo "Bootstrapping linux/arm64..."
-GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc-5 go install std
-
-if [ $GO_VERSION -ge 170 ]; then
-  echo "Bootstrapping linux/mips64..."
-  GOOS=linux GOARCH=mips64 CGO_ENABLED=1 CC=mips64-linux-gnuabi64-gcc-5 go install std
-
-  echo "Bootstrapping linux/mips64le..."
-  GOOS=linux GOARCH=mips64le CGO_ENABLED=1 CC=mips64el-linux-gnuabi64-gcc-5 go install std
+if which aarch64-linux-gnu-gcc-5 > /dev/null
+then
+  echo "Bootstrapping linux/arm64..."
+  GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc-5 go install std
+else
+  echo "Ignoring linux/arm..."
 fi
 
-if [ $GO_VERSION -ge 180 ]; then
-  echo "Bootstrapping linux/mips..."
-  GOOS=linux GOARCH=mips CGO_ENABLED=1 CC=mips-linux-gnu-gcc-5 go install std
+if which mips64-linux-gnuabi64-gcc-5 > /dev/null
+then
+  if [ $GO_VERSION -ge 170 ]; then
+    echo "Bootstrapping linux/mips64..."
+    GOOS=linux GOARCH=mips64 CGO_ENABLED=1 CC=mips64-linux-gnuabi64-gcc-5 go install std
 
-  echo "Bootstrapping linux/mipsle..."
-  GOOS=linux GOARCH=mipsle CGO_ENABLED=1 CC=mipsel-linux-gnu-gcc-5 go install std
+    echo "Bootstrapping linux/mips64le..."
+    GOOS=linux GOARCH=mips64le CGO_ENABLED=1 CC=mips64el-linux-gnuabi64-gcc-5 go install std
+  fi
+else
+  echo "Ignoring linux/mips64..."
 fi
 
-echo "Bootstrapping windows/amd64..."
-GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go install std
+if which mips-linux-gnu-gcc-5 > /dev/null
+then
+  if [ $GO_VERSION -ge 180 ]; then
+    echo "Bootstrapping linux/mips..."
+    GOOS=linux GOARCH=mips CGO_ENABLED=1 CC=mips-linux-gnu-gcc-5 go install std
 
-echo "Bootstrapping windows/386..."
-GOOS=windows GOARCH=386 CGO_ENABLED=1 CC=i686-w64-mingw32-gcc go install std
+    echo "Bootstrapping linux/mipsle..."
+    GOOS=linux GOARCH=mipsle CGO_ENABLED=1 CC=mipsel-linux-gnu-gcc-5 go install std
+  fi
+else
+  echo "Ignoring linux/mips..."
+fi
 
-echo "Bootstrapping darwin/amd64..."
-GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 CC=o64-clang go install std
 
-echo "Bootstrapping darwin/386..."
-GOOS=darwin GOARCH=386 CGO_ENABLED=1 CC=o32-clang go install std
+if which x86_64-w64-mingw32-gcc > /dev/null
+then
+  echo "Bootstrapping windows/amd64..."
+  GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go install std
+else
+  echo "Ignoring linux/mips..."
+fi
+
+
+if which i686-w64-mingw32-gcc > /dev/null
+then
+  echo "Bootstrapping windows/386..."
+  GOOS=windows GOARCH=386 CGO_ENABLED=1 CC=i686-w64-mingw32-gcc go install std
+else
+  echo "Ignoring windows/386..."
+fi
+
+if which o64-clang > /dev/null
+then
+  echo "Bootstrapping darwin/amd64..."
+  GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 CC=o64-clang go install std
+else
+  echo "Ignoring darwin/amd64..."
+fi
+
+if which o32-clang > /dev/null
+then
+  echo "Bootstrapping darwin/386..."
+  GOOS=darwin GOARCH=386 CGO_ENABLED=1 CC=o32-clang go install std
+else
+  echo "Ignoring darwin/386..."
+fi
 
 # Install xgo within the container to enable internal cross compilation
 echo "Installing xgo-in-xgo..."
